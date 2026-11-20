@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Register · EvaluatingCodeSpace{% endblock %}
+{% block content %}
+<div class="panel" style="max-width:420px;margin:2rem auto;">
+    <h2 style="text-align:center;margin-top:0;">Create your account</h2>
+
+    <!-- Google Signup Trigger -->
+    <button class="btn secondary" style="width:100%;margin-bottom:1rem;" onclick="showRoleModal(); return false;">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width:20px; height:20px;vertical-align:middle;margin-right:.5rem;">
+        Continue with Google
+    </button>
+
+    <!-- Role Selection Modal -->
+    <div id="roleModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;">
+        <div style="background:white; padding:2rem; border-radius:8px; max-width:400px; margin:10% auto; text-align:center;">
+            <h3>Select Your Role</h3>
+            <button onclick="redirectToGoogle('student')" class="btn" style="margin:1rem;">Student</button>
+            <button onclick="redirectToGoogle('instructor')" class="btn" style="margin:1rem;">Instructor</button>
+            <br>
+            <button onclick="closeRoleModal()" class="btn secondary" style="margin-top:1rem;">Cancel</button>
+        </div>
+    </div>
+
+    <div class="divider" style="display:flex;align-items:center;margin:1rem 0;gap:.5rem;">
+        <hr style="flex:1;border:none;border-top:1px solid #e5e7eb">
+        <span style="color:#6b7280">OR</span>
+        <hr style="flex:1;border:none;border-top:1px solid #e5e7eb">
+    </div>
+
+    <!-- Manual Registration Form -->
+    <form method="POST" action="{{ url_for('auth.register') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.username.label }} {{ form.username }}
+        </div>
+        <div class="form-group">
+            {{ form.email.label }} {{ form.email }}
+        </div>
+        <div class="form-group">
+            {{ form.password.label }} {{ form.password }}
+        </div>
+        <div class="form-group">
+            {{ form.role.label }} {{ form.role }}
+        </div>
+        <div style="margin-top: 1.5rem;"></div>
+        <button type="submit" class="btn" style="width:100%;">Sign Up</button>
+        <div style="text-align:center;margin-top:.6rem;">
+            <a href="{{ url_for('auth.login') }}" style="color:#2563eb;">Already have an account? Log In</a>
+        </div>
+    </form>
+</div>
+
+<!-- Role Modal Script -->
+<script>
+    function showRoleModal() {
+        document.getElementById('roleModal').style.display = 'block';
+    }
+
+    function closeRoleModal() {
+        document.getElementById('roleModal').style.display = 'none';
+    }
+
+    function redirectToGoogle(role) {
+        window.location.href = `/auth/register/google?role=${role}`;
+    }
+</script>
+{% endblock %}

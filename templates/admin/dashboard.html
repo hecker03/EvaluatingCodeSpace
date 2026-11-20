@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 3rem auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+        .section {
+            margin-bottom: 3rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f7f9fc;
+            color: #555;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        select, button {
+            padding: 0.5rem;
+            font-size: 1rem;
+            margin-right: 0.5rem;
+        }
+        .log-entry {
+            font-size: 0.9rem;
+            color: #444;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Admin Dashboard</h2>
+
+        <div class="section">
+            <h3>Role Assignment</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Email</th>
+                        <th>Current Role</th>
+                        <th>Assign New Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.role }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin.assign_role') }}">
+                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                <select name="new_role">
+                                    <option value="student">Student</option>
+                                    <option value="instructor">Instructor</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                                <button type="submit">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h3>Audit Logs</h3>
+            {% for log in audit_logs %}
+            <div class="log-entry">
+                <strong>{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</strong> — {{ log.action }}
+            </div>
+            {% else %}
+            <p>No audit logs available.</p>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

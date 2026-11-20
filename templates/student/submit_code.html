@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Submit Assignment</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .material-panel {
+            width: 40%;
+            background: #fff;
+            padding: 2rem;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+
+        .code-panel {
+            width: 60%;
+            padding: 2rem;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        pre {
+            background: #f0f0f0;
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        textarea {
+            flex-grow: 1;
+            margin-top: 1rem;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 1.1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: both;
+            background: #fff;
+            min-height: 400px;
+            min-width: 100%;
+            box-sizing: border-box;
+        }
+
+        select {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .button-group {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        button {
+            padding: 0.7rem 1.2rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .save-btn {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .submit-btn {
+            background: #007bff;
+            color: #fff;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .back-arrow {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1rem;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            background: #e9f5ff;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: background 0.2s;
+        }
+
+        .back-arrow:hover {
+            background: #d0eaff;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="{{ url_for('student.dashboard') }}" class="back-arrow">
+        &#8592; Back to Dashboard
+    </a>
+    <div class="container">
+        <div class="material-panel">
+            <h2>{{ assignment.title }}</h2>
+            <p>{{ assignment.description }}</p>
+
+            <h4>Input Format:</h4>
+            <pre>{{ assignment.input_format }}</pre>
+
+            <h4>Output Format:</h4>
+            <pre>{{ assignment.output_format }}</pre>
+
+            <h4>Constraints:</h4>
+            <pre>{{ assignment.constraints }}</pre>
+
+            <h4>Sample Input:</h4>
+            <pre>{{ assignment.sample_input }}</pre>
+
+            <h4>Sample Output:</h4>
+            <pre>{{ assignment.sample_output }}</pre>
+        </div>
+
+        <div class="code-panel">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+
+                <label for="code">Your Code:</label>
+                <textarea name="code" id="code" rows="20" required>{{ draft.code if draft else '' }}</textarea>
+                <div id="syntax-feedback" style="margin-top: 1rem; color: #d9534f; font-weight: bold;"></div>
+
+                <label for="language">Language:</label>
+                <select name="language" id="language" required>
+                    <option value="python" {% if draft and draft.language=='python' %}selected{% endif %}>Python
+                    </option>
+                    <option value="cpp" {% if draft and draft.language=='cpp' %}selected{% endif %}>C++</option>
+                    <option value="java" {% if draft and draft.language=='java' %}selected{% endif %}>Java</option>
+                </select>
+
+                <div class="button-group">
+                    <button type="submit" name="action" value="save" class="save-btn">💾 Save Draft</button>
+                    <button type="submit" name="action" value="submit" class="submit-btn">🚀 Submit</button>
+                </div>
+                <div class="button-group">
+                    <button type="button" onclick="triggerSyntaxCheck();" style="background:#28a745; color:#fff;">
+                        🧪 Check Syntax
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    <script>
+        // let testcase = {{ assignment.testcases[0] | tojson }};
+        function triggerSyntaxCheck() {
+            // console.log("Checking syntax for language:",testcase);
+            const code = document.getElementById('code').value;
+            console.log("Code to check:", code);
+            const language = document.getElementById('language').value;
+            console.log("Language selected:", language);
+            checkSyntax(code, language);
+        }
+        function checkSyntax(code, language ) {
+            const payload = { code, language};
+            fetch('/student/check_syntax', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
+                body: JSON.stringify(payload)
+            })
+                .then(async res => {
+                    console.log("Received response for syntax check:", res);
+                    if (!res.ok) {
+                        const contentType = res.headers.get("Content-Type");
+                        if (contentType && contentType.includes("application/json")) {
+                            const errorData = await res.json();
+                            throw new Error(errorData.message || `Server error ${res.status}`);
+                        } else {
+                            console.log("Content-Type header:", contentType);
+                            // console.log("Received HTML response:", await res.text());
+                            // throw new Error("Received HTML instead of JSON. Check Flask route or session.");
+                        }
+                    }
+                    const data = await res.json();
+                    const feedback = [];
+
+                    feedback.push(data.message);
+
+                    if (data.compile_output) {
+                        feedback.push("🛠️ Compiler Output:\n" + data.compile_output);
+                    }
+
+                    if (data.stderr) {
+                        feedback.push("⚠️ Runtime Error:\n" + data.stderr);
+                    }
+
+                    document.getElementById('syntax-feedback').innerText = feedback.join("\n\n");
+                })
+                .catch(err => {
+                    console.error("Syntax check failed:", err);
+                    document.getElementById('syntax-feedback').innerText = `⚠️ ${err.message}`;
+                });
+        }
+    </script>
+</body>
+
+</html>

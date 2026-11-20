@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Welcome · EvaluatingCodeSpace{% endblock %}
+{% block content %}
+    <section class="panel" style="margin-top:3rem;text-align:center;">
+        <div class="hero">
+            <div>
+                <h1 style="margin:0 0 .5rem 0;">Welcome to EvaluatingCodeSpace</h1>
+                <p style="color:#4b5563;margin:0 0 1.25rem 0;">Your modular platform for code evaluation, role-based dashboards, and scalable learning.</p>
+                <a href="{{ url_for('auth.login') }}" class="btn">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="btn secondary" style="margin-left:.5rem;">Register</a>
+            </div>
+            <div class="panel" style="background:#f8fafc">
+                <p style="margin:0;color:#374151">Fast, clean and responsive UI built on Flask templates.</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}

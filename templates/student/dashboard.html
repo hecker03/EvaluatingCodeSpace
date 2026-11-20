@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Student Dashboard{% endblock %}
+{% block head %}
+<script>
+    function toggleDropdown() {
+        const dropdown = document.getElementById('profileDropdown');
+        dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+    }
+    window.onclick = function(event) {
+        if (!event.target.closest('.profile')) {
+            const dd = document.getElementById('profileDropdown');
+            if (dd) dd.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}
+{% block content %}
+    <div class="topbar">
+        <div class="profile" onclick="toggleDropdown()">
+            <a>Profile</a>
+            <div id="profileDropdown" class="dropdown">
+                <a href="#account">Account</a>
+                <a href="#settings">Settings</a>
+                <a href="{{ url_for('auth.logout') }}">Logout</a>
+            </div>
+        </div>
+    </div>
+    <div class="panel" style="margin-top:1rem;">
+        <h1 style="text-align:center;">Welcome, {{ session['name'] }} 👋</h1>
+        <p style="text-align:center; color:#6b7280;">"Every submission is a step toward mastery."</p>
+
+        <div class="actions" style="margin:1rem 0;display:flex;gap:.8rem;flex-wrap:wrap;">
+            <a href="#assignments" class="btn">Submit Code</a>
+            <a href="#submissions" class="btn secondary">View Submissions</a>
+        </div>
+
+        <div class="assignments" id="assignments" style="margin-top: 2rem;">
+            <h2>Available Assignments</h2>
+            <table>
+                <thead>
+                    <tr><th>Title</th><th>Deadline</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                    <tr>
+                        <td>{{ assignment.title }}</td>
+                        <td>{{ assignment.deadline.strftime('%d %b %Y') }}</td>
+                        <td>
+                            <a href="{{ url_for('student.submit_code', assignment_id=assignment.assignment_id) }}" class="btn">Submit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="submissions" id="submissions" style="margin-top: 2rem;">
+            <h2>My Submissions</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Assignment</th>
+                        <th>Status</th>
+                        <th>Submitted At</th>
+                        <th>Grade</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in submissions %}
+                    <tr>
+                        <td>{{ submission.assignment.title if submission.assignment else 'Untitled' }}</td>
+                        <td>
+                            {% if submission.status == 'draft' %}
+                                <span class="status-draft">Draft</span>
+                            {% elif submission.status == 'submitted' %}
+                                <span class="status-submitted">Submitted</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ submission.timestamp.strftime('%d %b %Y, %I:%M %p') }}</td>
+                        <td>{{ submission.final_grade if submission.final_grade else 'Pending' }}</td>
+                        <td>
+                            {% if submission.status == 'draft' %}
+                                <a href="{{ url_for('student.edit_submission', id=submission.id) }}" class="btn secondary">Edit Draft</a>
+                            {% else %}
+                                <a href="{{ url_for('student.view_submission', id=submission.id) }}" class="btn secondary">View Result</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Assignment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 2rem;
+        }
+
+        .container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 800px;
+            margin: auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        textarea,
+        input[type="datetime-local"] {
+            width: 100%;
+            padding: 0.8rem;
+            margin-top: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            margin-top: 2rem;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            background: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        .back-arrow {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1rem;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            background: #e9f5ff;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: background 0.2s;
+        }
+
+        .back-arrow:hover {
+            background: #d0eaff;
+        }
+
+        details {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        pre {
+            background: #f0f0f0;
+            padding: 0.5rem;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="{{ url_for('instructor.submissions_list') }}" class="back-arrow">
+        &#8592; Back to Dashboard
+    </a>
+    <div class="container">
+        <h2>Edit Assignment</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <label for="title">Title</label>
+            {{ form.title(id="title", required=True) }}
+
+            <label for="description">Description</label>
+            {{ form.description(id="description", rows="4", required=True) }}
+
+            <label for="input_format">Input Format</label>
+            {{ form.input_format(id="input_format", rows="2") }}
+
+            <label for="output_format">Output Format</label>
+            {{ form.output_format(id="output_format", rows="2") }}
+
+            <label for="constraints">Constraints</label>
+            {{ form.constraints(id="constraints", rows="2") }}
+
+            <label for="sample_input">Sample Input</label>
+            {{ form.sample_input(id="sample_input", rows="2") }}
+
+            <label for="sample_output">Sample Output</label>
+            {{ form.sample_output(id="sample_output", rows="2") }}
+
+            <label for="deadline">Deadline</label>
+            {{ form.deadline(id="deadline", required=True) }}
+
+            <label for="testcases_json">Testcases (JSON Array)</label>
+            {{ form.testcases_json(id="testcases_json", rows="6", required=True, placeholder='[
+            {"input": "2\\n3", "expected_output": "5\\n"},
+            {"input": "10\\n20", "expected_output": "30\\n"}
+            ]') }}
+
+            <details>
+                <summary>Example format</summary>
+                <pre>[
+  { "input": "2\\n3", "expected_output": "5\\n" },
+  { "input": "10\\n20", "expected_output": "30\\n" }
+]</pre>
+            </details>
+
+            <button type="submit">Update Assignment</button>
+        </form>
+    </div>
+</body>
+
+</html>

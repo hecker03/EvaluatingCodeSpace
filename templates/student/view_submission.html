@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Submission</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .meta {
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            color: #555;
+        }
+        pre.code-block {
+            background: #f0f0f0;
+            padding: 1rem;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 1rem;
+            overflow-x: auto;
+        }
+        .feedback {
+            background: #e8f5e9;
+            padding: 1rem;
+            border-left: 4px solid #4caf50;
+            margin-top: 1rem;
+            border-radius: 5px;
+        }
+        .status {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .submitted { background: #007bff; }
+        .draft { background: #ffc107; color: #000; }
+        .graded { background: #28a745; }
+                .back-arrow {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1rem;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            background: #e9f5ff;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: background 0.2s;
+        }
+        .back-arrow:hover {
+            background: #d0eaff;
+        }
+    </style>
+</head>
+<body>
+    <a href="{{ url_for('student.dashboard') }}" class="back-arrow">
+        &#8592; Back to Dashboard</a>
+    <div class="container">
+        <h2>Submission for: {{ assignment.title }}</h2>
+
+        <div class="meta">
+            <strong>Language:</strong> {{ submission.language }}<br>
+            <strong>Status:</strong>
+            <span class="status {{ submission.status }}">{{ submission.status.capitalize() }}</span><br>
+            <strong>Submitted on:</strong> {{ submission.timestamp.strftime('%d %B %Y, %I:%M %p') }}<br>
+            {% if submission.final_grade is not none %}
+                <strong>Grade:</strong> {{ submission.final_grade }}/{{ assignment.max_grade }}<br>
+            {% endif %}
+        </div>
+
+        <h3>Your Code:</h3>
+        <pre class="code-block">{{ submission.code }}</pre>
+
+        {% if submission.feedback %}
+            <div class="feedback">
+                <strong>Instructor Feedback:</strong><br>
+                {{ submission.feedback }}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

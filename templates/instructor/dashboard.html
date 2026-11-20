@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}Instructor Dashboard{% endblock %}
+{% block head %}
+<script>
+    function toggleDropdown() {
+        const dropdown = document.getElementById('profileDropdown');
+        dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+    }
+    window.onclick = function(event) {
+        if (!event.target.closest('.profile')) {
+            const dd = document.getElementById('profileDropdown');
+            if (dd) dd.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}
+{% block content %}
+    <div class="topbar">
+        <div class="profile" onclick="toggleDropdown()">    
+            <a>Profile</a>
+            <div id="profileDropdown" class="dropdown">
+                <a href="#account">Account</a>
+                <a href="#settings">Settings</a>
+                <a href="{{ url_for('auth.logout') }}">Logout</a>
+            </div>
+        </div>
+    </div>
+    <div class="panel" style="margin-top:1rem;">
+        <h1 style="text-align:center;">Welcome, Instructor 👩‍🏫 {{ session['name'] }}</h1>
+        <p style="text-align:center; color:#6b7280;">"To teach is to shape futures—one submission at a time."</p>
+
+        <div class="actions" style="margin:1rem 0;display:flex;gap:.8rem;flex-wrap:wrap;">
+            <a href="#assigned-assignments" class="btn">Given Assignments</a>
+            <a href="#submissions-list" class="btn secondary">View Submissions</a>
+        </div>
+        <div class="submissions-list" id="submissions-list" style="margin-top: 2rem;">
+            <h2>All Student Submissions</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Assignment</th>
+                        <th>Submitted At</th>
+                        <th>Auto Grade</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in submissions %}
+                    <tr>
+                        <td>{{ submission.user.name if submission.user else 'Unknown' }}</td>
+                        <td>{{ submission.assignment.title if submission.assignment else 'Untitled' }}</td>
+                        <td>{{ submission.timestamp.strftime('%d %b %Y, %I:%M %p') }}</td>
+                        <td>{{ submission.auto_grade }}</td>
+                        <td>{{ submission.status }}</td>
+                        <td>
+                            <a href="{{ url_for('instructor.review_submission', submission_id=submission.id) }}" class="btn secondary">Review</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="assigned-assignments" id="assigned-assignments" style="margin-top: 2rem;">
+            <h2>Your Assigned Assignments</h2>
+            <table style="table-layout: fixed;">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Title</th>
+                        <th style="width: 35%;">Description</th>
+                        <th style="width: 20%;">Due Date</th>
+                        <th style="width: 15%;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                    <tr>
+                        <td style="word-wrap: break-word;">{{ assignment.title }}</td>
+                        <td style="word-wrap: break-word; max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ assignment.description }}">{{ assignment.description }}</td>
+                        <td>{{ assignment.deadline.strftime('%Y-%m-%d %H:%M') if assignment.deadline else 'No deadline' }}</td>
+                        <td>
+                            <a href="{{ url_for('instructor.edit_assignment', id=assignment.assignment_id) }}" class="btn">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="create-assignment" style="text-align:center; margin-top: 2rem;">
+            <a href="{{ url_for('instructor.create_assignment') }}" class="btn">Create New Assignment</a>
+        </div>
+    </div>
+{% endblock %}

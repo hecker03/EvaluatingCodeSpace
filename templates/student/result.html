@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Test Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2em;
+        }
+
+        .result-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 1em;
+        }
+
+        .result-table th,
+        .result-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        .result-table th {
+            background-color: #f2f2f2;
+        }
+
+        .pass {
+            color: green;
+            font-weight: bold;
+        }
+
+        .fail {
+            color: red;
+            font-weight: bold;
+        }
+
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Test Results</h1>
+
+    {% if assignment_name %}
+    <h2>Assignment: {{ assignment_name }}</h2>
+    {% endif %}
+    {% if student_name %}
+    <h3>Student: {{ student_name }}</h3>
+    {% endif %}
+
+    {% if results %}
+    <table class="result-table">
+        <tr>
+            <th>Input</th>
+            <th>Expected Output</th>
+            <th>Actual Output</th>
+            <th>Status</th>
+            <th>Verdict</th>
+        </tr>
+        {% for result in results %}
+        <tr>
+            <td>
+                <pre>{{ result.input }}</pre>
+            </td>
+            <td>
+                <pre>{{ result.expected }}</pre>
+            </td>
+            <td>
+                <pre>{{ result.actual or 'N/A' }}</pre>
+            </td>
+            <td>{{ result.status or 'Unknown' }}</td>
+            <td>
+                {% if result.passed %}
+                <span class="pass">Passed</span>
+                {% else %}
+                <span class="fail">Failed</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No test results available.</p>
+    {% endif %}
+</body>
+
+</html>

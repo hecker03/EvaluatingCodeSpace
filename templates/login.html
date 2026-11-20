@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Login · EvaluatingCodeSpace{% endblock %}
+{% block head %}
+<script>
+    function showUserLogin() {
+        document.getElementById('user-login').style.display = 'block';
+        document.getElementById('admin-login').style.display = 'none';
+        document.getElementById('login-title').textContent = 'User Login';
+    }
+    function showAdminLogin() {
+        document.getElementById('user-login').style.display = 'none';
+        document.getElementById('admin-login').style.display = 'block';
+        document.getElementById('login-title').textContent = 'Admin Login';
+    }
+    window.onload = function() { showUserLogin(); }
+</script>
+{% endblock %}
+{% block content %}
+    <div class="panel" style="max-width:420px;margin:2rem auto;">
+        <h2 id="login-title" style="text-align:center;margin-top:0;">User Login</h2>
+        {% if current_user %}
+        <div style="background:#f0f9ff;border:1px solid #0ea5e9;border-radius:8px;padding:12px;margin-bottom:1rem;text-align:center;">
+            <p style="margin:0;color:#0369a1;font-weight:500;">👋 Welcome back, {{ current_user.name }}!</p>
+            <p style="margin:4px 0 0 0;color:#64748b;font-size:0.9em;">You're already logged in as {{ current_user.role.role_name.title() }}</p>
+            <a href="{{ url_for('dashboard.index') }}" style="color:#0ea5e9;text-decoration:underline;font-size:0.9em;">Go to Dashboard</a>
+        </div>
+        {% endif %}
+        <button class="btn secondary" style="width:100%;margin-bottom:1rem;" onclick="window.location.href='{{ url_for('auth.login_google') }}'; return false;">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width:20px; height:20px;vertical-align:middle;margin-right:.5rem;">
+            Continue with Google
+        </button>
+        <div class="divider" style="display:flex;align-items:center;margin:1rem 0;gap:.5rem;">
+            <hr style="flex:1;border:none;border-top:1px solid #e5e7eb"><span style="color:#6b7280">OR</span><hr style="flex:1;border:none;border-top:1px solid #e5e7eb">
+        </div>
+
+        {% set flash_map = {} %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            {% set _ = flash_map.update({category: message}) %}
+        {% endfor %}
+        {% endwith %}
+
+        <form id="user-login" method="POST" action="{{ url_for('auth.login') }}">
+            {{ form.hidden_tag() }}
+            <label for="email">Email</label>
+            {{ form.email }}
+            <label for="password">Password</label>
+            {{ form.password }}
+            {% if flash_map.email_error %}<div class="flash error">{{ flash_map.email_error }}</div>{% endif %}
+            {% if flash_map.password_error %}<div class="flash error">{{ flash_map.password_error }}</div>{% endif %}
+            <div style="margin-top: 1.5rem;"></div>
+            <button type="submit" class="btn" style="width:100%;">Login</button>
+            <div style="text-align:center;margin-top:.6rem;">
+                <a class="" style="cursor:pointer;color:#2563eb;text-decoration:underline;" onclick="showAdminLogin()">Login as Admin</a>
+            </div>
+            <div style="text-align:center;margin-top:.4rem;">
+                <a href="{{ url_for('auth.register') }}" style="color:#2563eb;">Don't have an account? Register</a>
+            </div>
+        </form>
+
+        <form id="admin-login" method="POST" action="{{ url_for('auth.admin_login') }}" style="display:none;">
+            {{ admin_form.hidden_tag() }}
+            <label for="email">Admin Email</label>
+            {{ admin_form.email }}
+            <label for="password">Admin Password</label>
+            {{ admin_form.password }}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                    {% if category == 'admin_error' %}
+                        <div class="flash error">{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
+            {% endwith %}
+            <div style="margin-top: 1.5rem;"></div>
+            <button type="submit" class="btn" style="width:100%;">Login as Admin</button>
+            <div style="text-align:center;margin-top:.6rem;">
+                <a class="" style="cursor:pointer;color:#2563eb;text-decoration:underline;" onclick="showUserLogin()">Login as User</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

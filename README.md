@@ -1,135 +1,102 @@
-# 🚀 EvaluatingCodeSpace
+# EvaluatingCodeSpace
 
-> **The Next-Gen Automated Code Evaluation Platform with AI Assistance**
+A browser-based platform for evaluating student code. Instructors create assignments with test cases, students submit code, and the platform runs it in a sandbox, shows per-test results, and syncs scores to a Google Sheets gradebook. A Gemini-powered assistant helps students with concepts without giving away answers.
 
-EvaluatingCodeSpace is a robust, secure, and intelligent platform designed to streamline the coding education process. It empowers instructors to create assignments with automated test cases and provides students with a secure sandbox to practice and submit their code, now enhanced with a **GenAI-powered Chatbot** for real-time assistance.
+**Status:** core engine, dashboards and gradebook sync are working. Some pieces are still planned (see [Status](#status)).
+**Author:** Shrishailya Keskar
 
----
+## What it does
 
-## ✨ Key Features
+| Role | Can do |
+|---|---|
+| **Instructor** | create and edit assignments, define public and hidden test cases (JSON), review submissions, grade with feedback |
+| **Student** | see pending assignments, submit code, see verdicts per test case, review past submissions |
+| **Admin** | assign roles and manage users |
 
-### 🤖 **AI-Powered Assistance**
-- **Integrated GenAI Chatbot**: Powered by **Google Gemini 2.0 Flash**, our intelligent assistant is available on every page to help students clarify concepts and debug logic without giving away answers.
-- **Floating Widget**: Accessible, non-intrusive UI for seamless interaction.
+- **Sandboxed execution:** submissions run in isolated containers with limited resources. TODO(owner): confirm which executor is used today (Docker sandbox or self-hosted Judge0).
+- **Login:** Google OAuth 2.0, role-based access control, CSRF protection.
+- **Assistant:** Gemini chatbot available on every page, built to explain and hint rather than give answers.
+- **Gradebook:** scores are written to a Google Sheet automatically.
 
-### 🔐 **Secure & Robust Architecture**
-- **OAuth 2.0 Authentication**: Secure login via Google Accounts ensures verified identity management.
-- **Role-Based Access Control (RBAC)**: Distinct portals and permissions for **Students**, **Instructors**, and **Admins**.
-- **CSRF Protection**: Full protection against Cross-Site Request Forgery attacks.
+## How the parts fit
 
-### ⚡ **Automated Evaluation Engine**
-- **Instant Feedback**: Student submissions are automatically run against defined test cases.
-- **Dockerized Sandbox**: Code execution happens inside isolated **Docker containers** (Alpine Linux), ensuring security by restricting network access and resource usage.
-- **Support for Python**: Optimized for Python 3.11 submissions.
+```mermaid
+flowchart LR
+  S[Student] --> A[Flask app: auth, RBAC, dashboards]
+  I[Instructor] --> A
+  A --> E[Sandboxed evaluation]
+  A --> C[Gemini assistant]
+  A --> G[(Google Sheets gradebook)]
+  F[Onboarding form] -.-> U[UniqueIDGenerator]
+  U -.-> G
+  Q[Quiz form] -.-> Z[AutomatedQuizScoring]
+  Z -.-> G
+```
+Dashed lines are the Apps Script helpers below. TODO(owner): mark each as "connected" or "planned" once confirmed.
 
-### 📝 **Assignment Management**
-- **Instructor Dashboard**: Create assignments, set deadlines, and define hidden/public test cases.
-- **Student Dashboard**: View pending assignments, track submission history, and see real-time results.
+## Components
 
----
+| Repo | Role |
+|---|---|
+| [UniqueIDGenrator](https://github.com/hecker03/UniqueIDGenrator) | Google Apps Script that gives each form response a unique alphanumeric ID, used to onboard and track students |
+| [AutomatedQuizScoring](https://github.com/hecker03/AutomatedQuizScoring) | Google Apps Script that scores quiz responses and copies results into a grade sheet |
 
-## 🛠️ Technology Stack
+## Tech stack
 
-- **Backend**: Python, Flask
-- **Database**: MySQL (SQLAlchemy ORM)
-- **AI Engine**: Google Gemini API
-- **Security**: Docker, OAuthlib, Flask-WTF
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
+Python, Flask, SQLAlchemy, MySQL, Google Gemini API, Authlib (OAuth), Flask-WTF, Docker, HTML/CSS/JavaScript.
 
----
+## Run it locally
 
-## 🚀 Getting Started
+**Needs:** Python 3.8+, MySQL, Docker Desktop (running), a Google Cloud project for OAuth and Gemini.
 
-Follow these steps to set up the project locally.
+```bash
+git clone https://github.com/hecker03/EvaluatingCodeSpace.git
+cd EvaluatingCodeSpace
+python -m venv venv
+source venv/Scripts/activate        # Windows Git Bash. Linux/macOS: source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env                # then fill in your own values
+python run_dev.py
+```
+Open `http://localhost:5000`. `db.sql` holds the schema only; import it into an empty database first.
 
-### Prerequisites
-- Python 3.8+
-- MySQL Server
-- Docker Desktop (running)
-- Google Cloud Console Project (for OAuth & Gemini API)
+**Never commit `.env`, service-account JSON files or database dumps with real users.** They are in `.gitignore`.
 
-### Installation
-
-1.  **Clone the Repository**
-    ```bash
-    git clone https://github.com/yourusername/EvaluatingCodeSpace.git
-    cd EvaluatingCodeSpace
-    ```
-
-2.  **Create Virtual Environment**
-    ```bash
-    python -m venv venv
-    # Windows
-    venv\Scripts\activate
-    # Mac/Linux
-    source venv/bin/activate
-    ```
-
-3.  **Install Dependencies**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Configure Environment**
-    Create a `.env` file in the root directory:
-    ```env
-    # Database
-    DATABASE_URL="mysql+pymysql://user:password@localhost/ecs_platform"
-    
-    # Security
-    SECRET_KEY="your_secret_key"
-    
-    # Google OAuth
-    GOOGLE_CLIENT_ID="your_google_client_id"
-    GOOGLE_CLIENT_SECRET="your_google_client_secret"
-    
-    # AI Chatbot
-    GOOGLE_API_KEY="your_gemini_api_key"
-    
-    # Feature Flags
-    ENABLE_AUTO_EVAL=true
-    ENABLE_DOCKER_SANDBOX=true
-    ```
-
-5.  **Initialize Database**
-    ```bash
-    flask db upgrade
-    # OR manually import db.sql if provided
-    ```
-
-6.  **Run the Application**
-    ```bash
-    python ./run_dev.py
-    ```
-    Visit `http://localhost:5000` in your browser.
-
----
-
-## 🧪 Test Case Format
-
-When creating assignments, test cases should be provided in JSON format:
+## Test case format
 
 ```json
 [
-  {
-    "input": "5\n",
-    "output": "120\n"
-  },
-  {
-    "input": "3\n",
-    "output": "6\n"
-  }
+  { "input": "5\n", "output": "120\n" },
+  { "input": "3\n", "output": "6\n" }
 ]
 ```
 
----
+## Status
 
-## 🤝 Contributing
+| Area | State |
+|---|---|
+| Code evaluation engine | done |
+| Instructor and student dashboards | done |
+| Google Sheets gradebook sync | done |
+| Gemini assistant | done |
+| Unique ID onboarding (UniqueIDGenrator) | TODO(owner): connected or planned |
+| Quiz scoring (AutomatedQuizScoring) | TODO(owner): connected or planned |
+| E-certificate generator | planned |
+| Resource hub (PDFs, videos, snippets) | planned |
+| Verdict rendering | minor issues under review |
 
-Contributions are welcome! Please fork the repository and submit a pull request.
+## Security notes
 
----
+- Credentials come from environment variables; the repo ships `.env.example` only.
+- Earlier development history is kept in a private archive, because it contained local credentials that have since been rotated.
 
-<p align="center">
-  © 2025 EvaluatingCodeSpace. Built with ❤️ for Education.
-</p>
+## Roadmap
+
+- E-certificate generator for course completion
+- Resource hub for course material
+- Instructor control over hidden test cases
+- Analytics dashboard
+
+## License
+
+MIT
